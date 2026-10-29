@@ -24,10 +24,14 @@ def action_value(mdp, state, action, values):
     - No vuelva a sumar la recompensa del terminal en su valor:
       values[terminal] es cero.
     """
-    # TODO: Add your code here
-    raise NotImplementedError("Complete este bloque TODO")
-    # FIN DEL BLOQUE DEL ESTUDIANTE
-
+    return sum(
+        probability * (
+            mdp.reward(state, action, successor)
+            + mdp.discount * values[successor]
+        )
+        for successor, probability
+        in mdp.transitions(state, action)
+    )
 
 def value_iteration(mdp, tolerance=1e-8, max_iterations=1000):
     """Punto 4: barridos SINCRÓNICOS, desde V0=0.
@@ -52,10 +56,26 @@ def value_iteration(mdp, tolerance=1e-8, max_iterations=1000):
         raise ValueError('Tolerancia y límite de iteraciones deben ser positivos')
     values = dict.fromkeys(mdp.states, 0.0)
     history, deltas = [values.copy()], []
-    for _ in range(max_iterations):
-        # TODO: Add your code here
-        raise NotImplementedError("Complete este bloque TODO")
-        # FIN DEL BLOQUE DEL ESTUDIANTE
+    for _ in range(max_iterations):     
+        new_values = values.copy()
+
+        for state in mdp.states:
+            actions = mdp.actions(state)
+
+            if actions:
+                new_values[state] = max(
+                    action_value(mdp, state, action, values)
+                    for action in actions
+                )
+            else:
+                new_values[state] = 0.0
+
+        delta = max(
+            abs(new_values[s] - values[s])
+            for s in mdp.states
+        )
+        values = new_values
+        converged = delta < tolerance
         # Copias para la animación y empaquetado del resultado.
         history.append(values.copy())
         deltas.append(delta)
